@@ -1,0 +1,192 @@
+// Generics in EonLang
+
+// Generic identity function
+fn identity<T>(x: T) -> T {
+    return x;
+}
+
+// Generic swap function
+fn swap<T, U>(a: T, b: U) -> (U, T) {
+    return (b, a);
+}
+
+// Generic maximum function
+fn max<T>(a: T, b: T) -> T {
+    if a > b {
+        return a;
+    }
+    return b;
+}
+
+// Generic array container
+struct Array<T> {
+    data: [T; 10],
+    length: usize
+}
+
+impl<T> Array<T> {
+    fn new() -> Array<T> {
+        return Array {
+            data: [0; 10],  // Zero-initialized
+            length: 0
+        };
+    }
+    
+    fn push(ref mut self, item: T) {
+        if self.length < 10 {
+            self.data[self.length] = item;
+            self.length = self.length + 1;
+        }
+    }
+    
+    fn get(self, index: usize) -> Option<T> {
+        if index < self.length {
+            return Some(self.data[index]);
+        }
+        return None;
+    }
+    
+    fn len(self) -> usize {
+        return self.length;
+    }
+}
+
+// Generic linked list
+enum List<T> {
+    Cons(T, Box<List<T>>),
+    Nil
+}
+
+impl<T> List<T> {
+    fn new() -> List<T> {
+        return Nil;
+    }
+    
+    fn push_front(ref mut self, item: T) {
+        let new_list = Cons(item, Box::new(self));
+        self = new_list;
+    }
+    
+    fn is_empty(self) -> bool {
+        match self {
+            Cons(_, _) => false,
+            Nil => true
+        }
+    }
+    
+    fn len(self) -> i32 {
+        match self {
+            Cons(_, tail) => 1 + tail.len(),
+            Nil => 0
+        }
+    }
+}
+
+// Generic tree structure
+struct TreeNode<T> {
+    value: T,
+    left: Option<Box<TreeNode<T>>>,
+    right: Option<Box<TreeNode<T>>>
+}
+
+fn insert<T: Comparable<T>>(root: Option<Box<TreeNode<T>>>, value: T) -> Box<TreeNode<T>> {
+    match root {
+        None => Box::new(TreeNode {
+            value: value,
+            left: None,
+            right: None
+        }),
+        Some(node) => {
+            if value < node.value {
+                node.left = Some(insert(node.left, value));
+            } else {
+                node.right = Some(insert(node.right, value));
+            }
+            return node;
+        }
+    }
+}
+
+// Generic tuple operations
+fn first<T, U>(pair: (T, U)) -> T {
+    return pair.0;
+}
+
+fn second<T, U>(pair: (T, U)) -> U {
+    return pair.1;
+}
+
+// Const generics
+fn array_sum<T: Add>(arr: [T; N]) -> T {
+    let mut sum = 0;
+    for i in 0..N {
+        sum = sum + arr[i];
+    }
+    return sum;
+}
+
+// Trait bounds with generics
+fn print_all<T: Printable>(items: [T]) {
+    for item in items {
+        item.print();
+    }
+}
+
+// Where clauses for cleaner trait bounds
+fn complex_function<T, U, V>(t: T, u: U, v: V) -> R
+where
+    T: Clone + Debug,
+    U: Add<T>,
+    V: IntoIterator<Item = T>,
+    R: FromIterator<T>
+{
+    // Implementation
+    let mut result = R::new();
+    for item in v {
+        result.add(item);
+    }
+    return result;
+}
+
+// Phantom types for type safety
+struct Measured<T> {
+    value: f64,
+    unit: str,
+    _phantom: PhantomData<T>
+}
+
+enum Distance {}
+enum Time {}
+
+fn main() -> i32 {
+    // Using generic functions
+    let a = identity(42);
+    let b = identity("hello");
+    
+    let (x, y) = swap(1, "two");
+    
+    let m = max(5, 10);
+    
+    // Using generic struct
+    let mut arr = Array::<i32>::new();
+    arr.push(1);
+    arr.push(2);
+    arr.push(3);
+    
+    match arr.get(1) {
+        Some(v) => println!("Element at index 1: {}", v),
+        None => println!("Index out of bounds")
+    }
+    
+    // Using generic list
+    let mut list = List::<i32>::new();
+    list = Cons(1, Box::new(Cons(2, Box::new(Cons(3, Box::new(Nil))))));
+    
+    println!("List length: {}", list.len());
+    
+    // Using generic tuple functions
+    let pair = (42, "answer");
+    println!("First: {}, Second: {}", first(pair), second(pair));
+    
+    return 0;
+}

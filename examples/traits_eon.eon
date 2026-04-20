@@ -1,0 +1,151 @@
+// Traits and Interfaces in EonLang
+
+// Define a trait for drawable objects
+trait Drawable {
+    fn draw(self);
+    fn area(self) -> f64;
+}
+
+// Define a trait for comparable objects
+trait Comparable<T> {
+    fn compare(self, other: T) -> i32;  // -1, 0, 1
+    fn eq(self, other: T) -> bool {
+        self.compare(other) == 0
+    }
+}
+
+// Define a trait with associated types
+trait Container {
+    type Item;
+    fn add(ref mut self, item: Item);
+    fn get(self, index: usize) -> Option<Item>;
+    fn len(self) -> usize;
+}
+
+// Implement traits for structs
+struct Point {
+    x: f64,
+    y: f64
+}
+
+impl Drawable for Point {
+    fn draw(self) {
+        println("Drawing point at ({}, {})", self.x, self.y);
+    }
+    
+    fn area(self) -> f64 {
+        0.0  // A point has no area
+    }
+}
+
+impl Comparable<Point> for Point {
+    fn compare(self, other: Point) -> i32 {
+        let dx = self.x - other.x;
+        let dy = self.y - other.y;
+        if dx < dy { -1 }
+        else if dx > dy { 1 }
+        else { 0 }
+    }
+}
+
+// Define a struct that uses traits
+struct Circle {
+    x: f64,
+    y: f64,
+    radius: f64
+}
+
+impl Drawable for Circle {
+    fn draw(self) {
+        println("Drawing circle at ({}, {}) with radius {}",
+                self.x, self.y, self.radius);
+    }
+    
+    fn area(self) -> f64 {
+        3.14159 * self.radius * self.radius
+    }
+}
+
+impl Comparable<Circle> for Circle {
+    fn compare(self, other: Circle) -> i32 {
+        let diff = self.area() - other.area();
+        if diff < 0.0 { -1 }
+        else if diff > 0.0 { 1 }
+        else { 0 }
+    }
+}
+
+// Generic function with trait bounds
+fn print_area<T: Drawable>(shape: T) {
+    shape.draw();
+    println("Area: {}", shape.area());
+}
+
+// Multiple trait bounds
+fn print_compare<T: Comparable<U>, U>(a: T, b: U) {
+    let result = a.compare(b);
+    match result {
+        -1 => println("First is less than second"),
+        0 => println("First equals second"),
+        1 => println("First is greater than second"),
+        _ => println("Unknown comparison result")
+    }
+}
+
+// Default trait implementations
+trait Greeting {
+    fn greet(self) -> str {
+        return "Hello!".to_string();
+    }
+    
+    fn farewell(self) -> str {
+        return "Goodbye!".to_string();
+    }
+}
+
+struct Person {
+    name: str
+}
+
+impl Greeting for Person {
+    fn greet(self) -> str {
+        return "Hello, {}!".format(self.name);
+    }
+}
+
+// Trait inheritance
+trait Printable: Drawable {
+    fn print(self) {
+        self.draw();
+        println("Additional print info...");
+    }
+}
+
+impl Printable for Circle {
+    // Inherits draw() from Drawable
+}
+
+// Main function demonstrating traits
+fn main() -> i32 {
+    let point = Point { x: 1.0, y: 2.0 };
+    let circle = Circle { x: 0.0, y: 0.0, radius: 5.0 };
+    
+    // Using trait methods
+    print_area(point);
+    print_area(circle);
+    
+    // Comparing
+    let c1 = Circle { x: 0.0, y: 0.0, radius: 2.0 };
+    let c2 = Circle { x: 0.0, y: 0.0, radius: 3.0 };
+    print_compare(c1, c2);
+    
+    // Using default implementations
+    let person = Person { name: "Alice" };
+    println("{}", person.greet());
+    println("{}", person.farewell());
+    
+    // Using associated types
+    // (In real usage, this would involve a generic container)
+    
+    return 0;
+}

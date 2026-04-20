@@ -1,0 +1,105 @@
+// Algebraic Data Types in EonLang
+
+// Define an enum with multiple variants
+enum Shape {
+    Circle(f64),           // Tuple variant: radius
+    Rectangle(f64, f64),   // Tuple variant: width, height
+    Square(f64),           // Tuple variant: side
+    Triangle(f64, f64, f64) // Tuple variant: a, b, c sides
+}
+
+// Calculate area based on the shape variant
+fn area(shape: Shape) -> f64 {
+    match shape {
+        Circle(r) => 3.14159 * r * r,
+        Rectangle(w, h) => w * h,
+        Square(s) => s * s,
+        Triangle(a, b, c) => {
+            // Heron's formula
+            let s = (a + b + c) / 2.0;
+            let area = s * (s - a) * (s - b) * (s - c);
+            sqrt(area)
+        }
+    }
+}
+
+// Define a Result type similar to Rust
+enum Result<T, E> {
+    Ok(T),
+    Err(E)
+}
+
+// Define an Option type
+enum Option<T> {
+    Some(T),
+    None
+}
+
+fn safe_divide(a: f64, b: f64) -> Result<f64, str> {
+    if b == 0.0 {
+        return Err("Division by zero");
+    }
+    return Ok(a / b);
+}
+
+// Pattern matching with guards
+fn classify(x: i32) -> str {
+    match x {
+        n if n < 0 => "negative",
+        0 => "zero",
+        n if n % 2 == 0 => "even positive",
+        _ => "odd positive"
+    }
+}
+
+// Generic linked list
+enum List<T> {
+    Cons(T, Box<List<T>>),
+    Nil
+}
+
+fn length<T>(list: List<T>) -> i32 {
+    match list {
+        Cons(_, tail) => 1 + length(tail),
+        Nil => 0
+    }
+}
+
+// Binary tree
+struct Tree<T> {
+    value: T,
+    left: Option<Box<Tree<T>>>,
+    right: Option<Box<Tree<T>>>
+}
+
+fn main() -> i32 {
+    // Using our shapes
+    let c = Circle(5.0);
+    let r = Rectangle(4.0, 6.0);
+    let s = Square(3.0);
+    
+    println("Circle area: {}", area(c));
+    println("Rectangle area: {}", area(r));
+    println("Square area: {}", area(s));
+    
+    // Using Result
+    let ok_result = safe_divide(10.0, 2.0);
+    match ok_result {
+        Ok(v) => println("10/2 = {}", v),
+        Err(e) => println("Error: {}", e)
+    }
+    
+    let err_result = safe_divide(10.0, 0.0);
+    match err_result {
+        Ok(v) => println("10/0 = {}", v),
+        Err(e) => println("Error: {}", e)
+    }
+    
+    // Pattern matching with guards
+    println("Classify -5: {}", classify(-5));
+    println("Classify 0: {}", classify(0));
+    println("Classify 4: {}", classify(4));
+    println("Classify 7: {}", classify(7));
+    
+    return 0;
+}

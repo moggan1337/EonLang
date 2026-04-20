@@ -1,0 +1,193 @@
+// Lifetimes and Borrow Checking in EonLang
+
+struct Person {
+    name: str,
+    age: i32
+}
+
+// Basic lifetime annotation
+fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
+    if x.len() > y.len() {
+        return x;
+    }
+    return y;
+}
+
+// Lifetime annotations on structs
+struct Extractor<'a> {
+    content: &'a str
+}
+
+impl<'a> Extractor<'a> {
+    fn new(content: &'a str) -> Extractor<'a> {
+        return Extractor { content };
+    }
+    
+    fn extract<'b>(&'a self, start: usize, end: usize) -> &'b str {
+        // Returns a substring with lifetime tied to self
+        return self.content.substring(start, end);
+    }
+}
+
+// Multiple lifetime parameters
+fn first_or_second<'a, 'b>(x: &'a str, y: &'b str) -> str {
+    return x.to_string() + y;
+}
+
+// Lifetime elision rules
+fn get_first(s: &str) -> &str {
+    // Compiler infers: fn get_first<'a>(s: &'a str) -> &'a str
+    return &s[0..1];
+}
+
+fn get_value(map: &HashMap, key: &str) -> Option<&Value> {
+    // Compiler infers lifetimes
+    return map.get(key);
+}
+
+// Lifetime bounds
+fn print_if_valid<'a, T>(opt: Option<&'a T>) where T: Debug {
+    match opt {
+        Some(val) => println!("{:?}", val),
+        None => println!("None")
+    }
+}
+
+// References in structs
+struct Student<'a> {
+    name: &'a str,
+    id: i32
+}
+
+struct Course<'a> {
+    title: &'a str,
+    students: [Student<'a>; 100]
+}
+
+// Lifetime subtyping
+struct Container<'a> {
+    data: &'a str
+}
+
+struct InnerContainer<'b> {
+    data: &'b str
+}
+
+struct Wrapper<'a, 'b> where 'a: 'b {
+    outer: Container<'a>,
+    inner: InnerContainer<'b>
+}
+
+// Static lifetime
+static GLOBAL_MESSAGE: str = "This is a global message";
+
+fn get_global() -> &'static str {
+    return GLOBAL_MESSAGE;
+}
+
+// Mutable references
+fn increment(ref mut value: &mut i32) {
+    *value = *value + 1;
+}
+
+fn swap(ref mut a: &mut i32, ref mut b: &mut i32) {
+    let temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+// Borrowing rules
+fn borrow_and_print(s: &str) {
+    println!("{}", s);
+    // Cannot modify s here - it's immutable borrow
+}
+
+fn borrow_and_modify(ref mut s: &mut String) {
+    s.push_str(" modified");
+    // Can modify s here - it's mutable borrow
+}
+
+// The borrow checker prevents:
+// 1. Multiple mutable borrows
+// 2. Mutable and immutable borrows at the same time
+// 3. Returning borrowed data that outlives the source
+
+// Invalid: Returning reference to local variable
+// fn invalid() -> &str {
+//     let s = "hello";  // s is dropped at end of function
+//     return s;  // ERROR: returning reference to local variable
+// }
+
+// Valid: Data with longer lifetime
+fn valid() -> &'static str {
+    return "hello";  // Static string lives forever
+}
+
+// NLL (Non-Lexical Lifetimes) example
+fn nll_example() {
+    let mut data = vec![1, 2, 3];
+    
+    let first = &data[0];  // Immutable borrow starts
+    
+    println!("First element: {}", first);
+    // first's borrow ends here (NLL)
+    
+    data.push(4);  // OK - no active borrows of data
+}
+
+// Lifetime in method definitions
+struct Buffer<'a> {
+    data: &'a [u8]
+}
+
+impl<'a> Buffer<'a> {
+    fn new(data: &'a [u8]) -> Buffer<'a> {
+        return Buffer { data };
+    }
+    
+    fn as_slice<'b>(&'b self) -> &'b [u8] {
+        // Lifetime of returned reference
+        return self.data;
+    }
+    
+    fn transform<'b, F>(&'b self, f: fn(&[u8]) -> [u8]) -> [u8] {
+        // Complex lifetime relationships
+        return f(self.data);
+    }
+}
+
+// Lifetime covariance and contravariance
+struct Reader<'a> {
+    input: &'a str
+}
+
+struct Writer<'a> {
+    output: &'a mut str
+}
+
+// Main demonstrating lifetimes
+fn main() -> i32 {
+    let string1 = str::from("Hello");
+    let string2 = str::from("World");
+    
+    // Using function with lifetimes
+    let result = longest(string1, string2);
+    println!("Longest: {}", result);
+    
+    // Using lifetime-annotated struct
+    let extractor = Extractor::new("Extract this!");
+    println!("Content: {}", extractor.content);
+    
+    // Mutable borrowing
+    let mut value = 42;
+    increment(&mut value);
+    println!("Incremented: {}", value);
+    
+    // NLL demonstration
+    nll_example();
+    
+    // Static lifetime
+    println!("Global: {}", get_global());
+    
+    return 0;
+}
