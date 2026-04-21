@@ -1,9 +1,29 @@
 # EonLang
 
+[![CI](https://github.com/moggan1337/EonLang/actions/workflows/ci.yml/badge.svg)](https://github.com/moggan1337/EonLang/actions/workflows/ci.yml)
+
 **EonLang** is a modern, compiled programming language with a focus on safety,
 performance, and expressive power. It features a powerful type system with
 Hindley-Milner type inference, algebraic data types, traits/interfaces,
 pattern matching, and a robust borrow checker for memory safety.
+
+## 🎬 Demo
+![EonLang Demo](demo.gif)
+
+*Compile and run EonLang programs with the REPL*
+
+## Screenshots
+| Component | Preview |
+|-----------|---------|
+| REPL Interface | ![repl](screenshots/repl.png) |
+| Type Inference | ![types](screenshots/type-inference.png) |
+| Error Messages | ![errors](screenshots/errors.png) |
+
+## Visual Description
+REPL shows code being typed with autocomplete and inline type annotations. Type inference displays constraint solving with examples. Error messages show problematic code with helpful suggestions.
+
+---
+
 
 ## Table of Contents
 
